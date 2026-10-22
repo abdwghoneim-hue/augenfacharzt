@@ -45,3 +45,4 @@ next-env.d.ts
 
 # local file storage (Stage 1 dev only — swap for object storage in production)
 /storage
+.neon
