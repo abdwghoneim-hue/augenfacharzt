@@ -9,6 +9,7 @@ import { Card, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { MicInput } from "@/components/MicInput";
+import { Citations } from "@/components/Citations";
 
 const IMAGE_PROMPTS = [
   "Beschreiben Sie den Befund.",
@@ -90,7 +91,7 @@ export function LearnSession({
         </span>
       </div>
 
-      <Card>
+      <Card key={question.id} className="animate-fade-in-up">
         <div className="mb-3 flex flex-wrap gap-1">
           {question.specialties.map((s) => (
             <Badge key={s} tone="neutral">
@@ -128,11 +129,12 @@ export function LearnSession({
         )}
 
         {revealed && (
-          <div className="mt-6 rounded-md border border-accent/20 bg-accent-soft p-4">
+          <div className="animate-fade-in-up mt-6 rounded-md border border-accent/20 bg-accent-soft p-4">
             <p className="mb-1 text-xs font-semibold uppercase text-accent">Musterantwort</p>
             <p className="whitespace-pre-wrap text-sm text-foreground">
               {question.modelAnswer ?? "Für diese Frage liegt noch keine Musterantwort vor."}
             </p>
+            <Citations citations={question.citations} />
           </div>
         )}
 

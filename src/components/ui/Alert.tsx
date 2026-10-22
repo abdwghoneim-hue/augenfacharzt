@@ -17,7 +17,11 @@ export function Alert({
   return (
     <div
       role={tone === "danger" ? "alert" : "status"}
-      className={cn("rounded-md border px-4 py-3 text-sm", toneClasses[tone], className)}
+      className={cn(
+        "animate-fade-in-up rounded-md border px-4 py-3 text-sm",
+        toneClasses[tone],
+        className,
+      )}
       {...props}
     />
   );

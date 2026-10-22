@@ -19,22 +19,41 @@ function splitQuestionAndAnswer(raw: string): { originalText: string; originalAn
  * Heuristic question splitter for imported PDF/DOCX/TXT text (Stage 1, no
  * AI/LLM available). Admins review and edit every extracted question before
  * publishing, so this only needs to be a reasonable starting point.
+ *
+ * Tries three strategies and picks whichever finds the most structure in
+ * the document (most matches wins, numbered marker ties broken in its
+ * favor), rather than a fixed priority order — a numbered section tucked
+ * into one corner of an otherwise bullet-listed document would otherwise
+ * win by being "first" and silently drop everything else:
+ *   1. Numbered list markers ("1.", "2)", "Frage 3:").
+ *   2. Bullet lines ("- ", "– ", "• ") — common in oral-exam protocol notes
+ *      that list one question per bullet without numbering.
+ *   3. Blank-line-separated paragraphs, as a last resort.
  */
 export function splitTextIntoBlocks(text: string): QuestionBlock[] {
   const normalized = text.replace(/\r\n?/g, "\n").trim();
   if (!normalized) return [];
 
-  const numberedMarker = /^\s*(?:frage\s*)?(\d{1,4})[.)]\s+/gim;
-  const matches = [...normalized.matchAll(numberedMarker)];
+  const numberedMarker = /^[ \t]*(?:frage\s*)?(\d{1,4})[.)][ \t]+/gim;
+  const numberedMatches = [...normalized.matchAll(numberedMarker)];
+
+  const bulletMarker = /^[ \t]*[-–•][ \t]+/gm;
+  const bulletMatches = [...normalized.matchAll(bulletMarker)];
 
   let rawBlocks: { text: string; pageReference?: string }[];
 
-  if (matches.length >= 2) {
-    rawBlocks = matches.map((m, i) => {
+  if (numberedMatches.length >= 2 && numberedMatches.length >= bulletMatches.length) {
+    rawBlocks = numberedMatches.map((m, i) => {
       const start = m.index ?? 0;
-      const end = i + 1 < matches.length ? (matches[i + 1].index ?? normalized.length) : normalized.length;
+      const end = i + 1 < numberedMatches.length ? (numberedMatches[i + 1].index ?? normalized.length) : normalized.length;
       const content = normalized.slice(start + m[0].length, end).trim();
       return { text: content, pageReference: `Nr. ${m[1]}` };
+    });
+  } else if (bulletMatches.length >= 3) {
+    rawBlocks = bulletMatches.map((m, i) => {
+      const start = (m.index ?? 0) + m[0].length;
+      const end = i + 1 < bulletMatches.length ? (bulletMatches[i + 1].index ?? normalized.length) : normalized.length;
+      return { text: normalized.slice(start, end).trim() };
     });
   } else {
     rawBlocks = normalized

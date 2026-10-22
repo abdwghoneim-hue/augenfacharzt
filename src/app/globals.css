@@ -1,25 +1,29 @@
 @import "tailwindcss";
 
 /*
- * Fixed light, clinical/academic theme — deliberately NOT dark-mode-first
- * (spec explicitly asks to avoid dark-mode-first design). White background,
- * black/dark-gray text, subtle gray borders, minimal dark-blue accent.
+ * Refined medical-education theme — fixed light (deliberately NOT
+ * dark-mode-first). Soft slate-white background, deep medical blue as the
+ * primary color, teal as a secondary accent used sparingly (specialty
+ * icons, secondary stats), light sky blue as a quiet highlight tint.
  */
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --surface: #ffffff;
-  --foreground: #171717;
-  --muted: #595959;
-  --border: #e2e2e2;
-  --accent: #1e3a8a;
-  --accent-hover: #172f6e;
-  --accent-soft: #eef2fb;
-  --danger: #b42318;
-  --danger-soft: #fdecea;
-  --success: #15803d;
-  --success-soft: #eafaf0;
-  --warning: #b45309;
-  --warning-soft: #fef3e2;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --accent: #1e40af;
+  --accent-hover: #1a3691;
+  --accent-soft: #e0f2fe;
+  --accent-light: #3b82f6;
+  --secondary: #0d9488;
+  --secondary-soft: #ccfbf1;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --success: #16a34a;
+  --success-soft: #dcfce7;
+  --warning: #d97706;
+  --warning-soft: #fef3c7;
 }
 
 @theme inline {
@@ -31,6 +35,9 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-light: var(--accent-light);
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
@@ -39,6 +46,52 @@
   --color-warning-soft: var(--warning-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-fade-in: fade-in 0.5s ease-out both;
+  --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-scale-in: scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(12px, -16px);
+  }
 }
 
 html {
@@ -49,4 +102,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Respect users who've asked for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

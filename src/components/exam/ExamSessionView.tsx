@@ -13,6 +13,7 @@ import { rateQuestionAction } from "@/app/actions/progress";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { MicInput } from "@/components/MicInput";
+import { Citations } from "@/components/Citations";
 
 type Stage = "answering" | "followups" | "revealed";
 
@@ -78,7 +79,7 @@ export function ExamSessionView({
         </span>
       </div>
 
-      <Card>
+      <Card key={question.id} className="animate-fade-in-up">
         <p className="mb-1 text-xs font-semibold uppercase text-muted">Fall</p>
         <p className="text-lg leading-relaxed text-foreground">
           {question.scenarioText ?? question.originalText}
@@ -95,7 +96,7 @@ export function ExamSessionView({
         )}
 
         {stage === "answering" && (
-          <div className="mt-6 space-y-3">
+          <div className="animate-fade-in-up mt-6 space-y-3">
             <p className="text-sm font-medium text-foreground">Ihre Antwort</p>
             <MicInput name="answer" value={answer} onChange={setAnswer} />
             <Button type="button" disabled={saving} onClick={saveAndContinue}>
@@ -105,11 +106,13 @@ export function ExamSessionView({
         )}
 
         {stage === "followups" && (
-          <div className="mt-6 space-y-4">
+          <div className="animate-fade-in-up mt-6 space-y-4">
             <p className="text-sm font-semibold text-foreground">Prüfer-Nachfragen</p>
             <ul className="list-decimal space-y-2 pl-5 text-sm text-foreground">
               {question.followUps.map((f, i) => (
-                <li key={i}>{f}</li>
+                <li key={i} className="animate-fade-in-up" style={{ animationDelay: `${i * 80}ms` }}>
+                  {f}
+                </li>
               ))}
             </ul>
             <Button type="button" onClick={() => setStage("revealed")}>
@@ -119,7 +122,7 @@ export function ExamSessionView({
         )}
 
         {stage === "revealed" && (
-          <div className="mt-6 space-y-4">
+          <div className="animate-fade-in-up mt-6 space-y-4">
             <div className="rounded-md border border-border bg-gray-50 p-4">
               <p className="mb-1 text-xs font-semibold uppercase text-muted">Ihre Antwort</p>
               <p className="whitespace-pre-wrap text-sm text-foreground">{answer || "(keine Eingabe)"}</p>
@@ -131,6 +134,7 @@ export function ExamSessionView({
               <p className="whitespace-pre-wrap text-sm text-foreground">
                 {question.modelAnswer ?? "Für diese Frage liegt noch keine Musterantwort vor."}
               </p>
+              <Citations citations={question.citations} />
             </div>
             <div>
               <p className="mb-2 text-sm font-medium text-foreground">Selbsteinschätzung</p>

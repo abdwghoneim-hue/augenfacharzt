@@ -41,3 +41,68 @@ export async function getHomeStats(userId: string) {
     weakTopics,
   };
 }
+
+export type SpecialtyOverview = {
+  id: string;
+  slug: string;
+  name: string;
+  total: number;
+  reviewed: number;
+  percent: number;
+};
+
+export async function getSpecialtyOverview(userId: string): Promise<SpecialtyOverview[]> {
+  const specialties = await prisma.specialty.findMany({ orderBy: { order: "asc" } });
+
+  const rows = await Promise.all(
+    specialties.map(async (s) => {
+      const total = await prisma.question.count({
+        where: { status: "PUBLISHED", specialties: { some: { specialtyId: s.id } } },
+      });
+      const reviewed = await prisma.userProgress.count({
+        where: {
+          userId,
+          confidence: { not: null },
+          question: { status: "PUBLISHED", specialties: { some: { specialtyId: s.id } } },
+        },
+      });
+      return {
+        id: s.id,
+        slug: s.slug,
+        name: s.name,
+        total,
+        reviewed,
+        percent: total > 0 ? Math.round((reviewed / total) * 100) : 0,
+      };
+    }),
+  );
+
+  return rows;
+}
+
+export type RecentActivityItem = {
+  questionId: string;
+  questionText: string;
+  confidence: string | null;
+  lastReviewedAt: Date;
+  specialtyNames: string[];
+};
+
+export async function getRecentActivity(userId: string, limit = 5): Promise<RecentActivityItem[]> {
+  const rows = await prisma.userProgress.findMany({
+    where: { userId, lastReviewedAt: { not: null } },
+    orderBy: { lastReviewedAt: "desc" },
+    take: limit,
+    include: {
+      question: { include: { specialties: { include: { specialty: true } } } },
+    },
+  });
+
+  return rows.map((r) => ({
+    questionId: r.questionId,
+    questionText: r.question.originalText,
+    confidence: r.confidence,
+    lastReviewedAt: r.lastReviewedAt!,
+    specialtyNames: r.question.specialties.map((s) => s.specialty.name),
+  }));
+}

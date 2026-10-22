@@ -2,12 +2,14 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { urlFor } from "@/lib/storage";
 
+export type ExamCitation = { type: string; title: string; dateLabel: string | null; url: string | null };
 export type ExamQuestion = {
   id: string;
   originalText: string;
   scenarioText: string | null;
   followUps: string[];
   modelAnswer: string | null;
+  citations: ExamCitation[];
   images: { url: string; caption: string | null }[];
 };
 
@@ -27,7 +29,7 @@ export async function getExamQuestions(options: {
       ...(options.mode === "IMAGE" ? { images: { some: { status: "PUBLISHED" } } } : {}),
     },
     include: {
-      answers: { where: { type: "MODEL" } },
+      answers: { where: { type: "MODEL" }, include: { citations: { orderBy: { order: "asc" } } } },
       clinicalCase: { include: { followUps: { orderBy: { order: "asc" } } } },
       images: { where: { status: "PUBLISHED" } },
     },
@@ -49,6 +51,12 @@ export async function getExamQuestions(options: {
     scenarioText: q.clinicalCase?.scenarioText ?? null,
     followUps: q.clinicalCase?.followUps.map((f) => f.text) ?? [],
     modelAnswer: q.answers[0]?.text ?? null,
+    citations: (q.answers[0]?.citations ?? []).map((c) => ({
+      type: c.type,
+      title: c.title,
+      dateLabel: c.dateLabel,
+      url: c.url,
+    })),
     images: q.images.map((img) => ({ url: urlFor(img.filePath), caption: img.caption })),
   }));
 }

@@ -37,6 +37,14 @@ enum AnswerType {
   AI_SUGGESTED // reserved for Stage 2 (AI-suggested answers), unused in Stage 1
 }
 
+enum CitationSourceType {
+  DOG_LEITLINIE
+  DOG_BVA_STELLUNGNAHME
+  AWMF_LEITLINIE
+  EYEWIKI
+  OTHER
+}
+
 enum ImageType {
   FUNDUS
   OCT
@@ -203,7 +211,23 @@ model QuestionAnswer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  citations AnswerCitation[]
+
   @@index([questionId, type])
+}
+
+model AnswerCitation {
+  id        String             @id @default(cuid())
+  answerId  String
+  answer    QuestionAnswer     @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  type      CitationSourceType
+  title     String
+  /// Free text, e.g. "2022", "Stand 05/2023" — guidelines aren't always dated to the year alone.
+  dateLabel String?
+  url       String?
+  order     Int                @default(0)
+
+  @@index([answerId])
 }
 
 model ClinicalCase {
