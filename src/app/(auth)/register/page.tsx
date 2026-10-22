@@ -4,6 +4,8 @@ import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function RegisterPage() {
   const settings = await prisma.registrationSettings.findUnique({ where: { id: 1 } });
   const registrationOpen = settings?.registrationOpen ?? true;
